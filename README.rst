@@ -73,3 +73,8 @@ Create package::
 Upload package::
 
   twine upload dist/*
+
+Run it on Termux::
+
+  pkg install clang # for cryptography
+  ./dev.sh
