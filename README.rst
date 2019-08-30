@@ -65,3 +65,11 @@ Setup project::
 Run some test::
 
   tox
+
+Create package::
+
+  python setup.py sdist bdist_wheel
+
+Upload package::
+
+  twine upload dist/*
