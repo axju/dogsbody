@@ -12,7 +12,7 @@ setup(
     version='0.0.1',
     description='A tool to create and execute a "special setup"/"data file".',
     long_description=README,
-    url='???',
+    url='https://github.com/axju/dogsbody',
     author='Axel Juraske',
     author_email='axel.juraske@short-report.de',
     license='MIT',
