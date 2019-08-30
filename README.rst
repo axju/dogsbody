@@ -59,7 +59,7 @@ Virtual environment linux::
 
 Setup project::
 
-  python -m pip install --upgrade pip wheel setuptools tox flake8 pylint pylama
+  python -m pip install --upgrade pip wheel setuptools twine tox flake8 pylint pylama
   pip install -e .
 
 Run some test::
