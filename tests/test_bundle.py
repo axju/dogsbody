@@ -2,9 +2,10 @@ import os
 import unittest
 import filecmp
 from shutil import rmtree
-from dogsbody.cls import Unzipper
+from dogsbody.bundle import create_bundle, extract_bundle
 
-class TestUnzipper(unittest.TestCase):
+
+class TestCreateExtract(unittest.TestCase):
 
     DATA = {
         'data': os.path.join(os.path.dirname(__file__), 'data'),
@@ -20,11 +21,8 @@ class TestUnzipper(unittest.TestCase):
         rmtree(self.DATA['data'])
 
     def test_basic(self):
-        unzipper = Unzipper(self.DATA['source'], password='1234')
-        unzipper.create(self.DATA['filename'])
-
-        unzipper = Unzipper(self.DATA['filename'], password='1234')
-        unzipper.unzip(self.DATA['output'])
+        create_bundle(self.DATA['source'], self.DATA['filename'], '1234')
+        extract_bundle(self.DATA['filename'], self.DATA['output'], '1234')
 
         common = ['main.sh', 'readme.txt']
         result, _, _ = filecmp.cmpfiles(self.DATA['source'], self.DATA['output'], common)
