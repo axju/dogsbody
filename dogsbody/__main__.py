@@ -1,7 +1,7 @@
 """the command line interface"""
 from argparse import ArgumentParser
 import dogsbody
-from .daemon import run_source, load_settings
+from .daemon import run_sources, load_settings
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     settings = load_settings(args.config)
     if args.password:
         settings['password'] = args.password
-    run_source(settings)
+    run_sources(settings)
 
 
 if __name__ == '__main__':

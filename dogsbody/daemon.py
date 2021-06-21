@@ -1,5 +1,6 @@
 """the command line interface"""
 import os
+from pathlib import Path
 from time import sleep
 from logging import getLogger
 from argparse import ArgumentParser
@@ -15,7 +16,7 @@ from .bundle import extract_bundle
 logger = getLogger(__name__)
 
 
-def runner_main(source, settings):
+def runner_main(source, config):
     os.chdir(source)
     logger.info('Change to workdir.')
 
@@ -28,33 +29,47 @@ def runner_main(source, settings):
     return True
 
 
-def get_source(settings):
-    yield 'test'
+def iter_source(settings):
+    for path in settings.get('source', []):
+        filename = Path(path).resolve()
+        if filename.is_file():
+            yield filename
 
 
-def get_runner(settings):
+def analyze_source(source, settings):
+    settings_files = [str(source / 'config.*')]
+    config = Dynaconf(settings_files=settings_files)
+    result = dict(settings)
+    result.update(config)
+    return result
+
+
+def get_runner(config):
     return runner_main
 
 
-def run_source(settings):
-    for source in get_source(settings):
-        workdir = mkdtemp()
-        logger.info('Create workdir "%s"', workdir)
+def run_sources(settings):
+    for source in iter_source(settings):
+        workdir = Path(mkdtemp())
         extract_bundle(source, workdir, settings.get('password'))
-        runner = get_runner(settings)
-        runner(workdir, settings)
+        logger.info('Create workdir and extract "%s"', workdir)
+
+        config = analyze_source(workdir, settings)
+        runner = get_runner(config)
+        runner(workdir, config)
+
         rmtree(workdir)
         logger.info('Delete workdir "%s"', workdir)
 
 
 def run(settings):
-    print('interval', settings.get('interval'))
     interval = settings.get('interval', 10)
+    logger.info('Run daemon wit interval=%i', interval)
 
     error_counter = 0
     while True:
         try:
-            run_source(settings)
+            run_sources(settings)
             for _ in range(interval):
                 sleep(1)
             error_counter = 0
