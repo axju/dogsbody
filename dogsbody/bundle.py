@@ -6,15 +6,15 @@ from base64 import urlsafe_b64encode
 from zipfile import ZipFile, ZIP_DEFLATED
 from argparse import ArgumentParser
 
-logger = getLogger(__name__)
-try:
-    from cryptography.fernet import Fernet
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-except ImportError:
-    logger.info('No cryptography. You cannot use the password! '
-                'To fix it install "cryptography"')
+from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from .utils import setup_logger
+
+
+logger = getLogger('dogsbody.bundle')
 
 
 def get_password(password, salt=None):
@@ -48,6 +48,7 @@ def create_bundle(directory, filename, password=None):
 
         with open(filename, 'wb') as file:
             file.write(encrypted)
+    return True
 
 
 def extract_bundle(filename, directory, password=None):
@@ -60,17 +61,23 @@ def extract_bundle(filename, directory, password=None):
             data = file.read()
 
         fernet = Fernet(get_password(password))
-        encrypted = fernet.decrypt(data)
+        try:
+            encrypted = fernet.decrypt(data)
+        except InvalidToken:
+            logger.warning('Wrong password')
+            return False
+
         zip_buffer.write(encrypted)
 
     with ZipFile(zip_buffer) as zfile:
         zfile.extractall(directory)
+    return True
 
 
 def cli():
     parser = ArgumentParser()
     parser.add_argument('-p', '--password', default=None)
-    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-v', '--verbose', action="count", help="verbose level... repeat up to three times.")
     subparser = parser.add_subparsers(dest='action')
 
     subparser_create = subparser.add_parser('create')
@@ -82,6 +89,7 @@ def cli():
     subparser_extract.add_argument('directory')
 
     args = parser.parse_args()
+    setup_logger(args.verbose)
     if args.action == 'create':
         create_bundle(args.directory, args.filename, args.password)
     else:
