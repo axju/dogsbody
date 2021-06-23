@@ -17,12 +17,20 @@ def load_settings(filename=None, **kwargs):
     return settings
 
 
-def setup_logger(level=0, root=''):
+def setup_logger(level=0, filename=None, root='', format_str='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
     """setup the root logger"""
-    local_logger = logging.getLogger(root)
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     level = levels[min(len(levels) - 1, level or 0)]
+    local_logger = logging.getLogger(root)
     local_logger.setLevel(level)
-    ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    local_logger.addHandler(ch)
+    if filename is None:
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter(format_str))
+        ch.setLevel(level)
+        local_logger.addHandler(ch)
+    else:
+        fh = logging.FileHandler(filename)
+        fh.setFormatter(logging.Formatter(format_str))
+        fh.setLevel(level)
+        local_logger.addHandler(fh)
+    return local_logger

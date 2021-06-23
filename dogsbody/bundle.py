@@ -1,10 +1,10 @@
 """the command line interface"""
-import os
-import io
+from io import BytesIO
 from logging import getLogger
 from base64 import urlsafe_b64encode
 from zipfile import ZipFile, ZIP_DEFLATED
 from argparse import ArgumentParser
+from pathlib import Path
 
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
@@ -30,14 +30,17 @@ def get_password(password, salt=None):
     return urlsafe_b64encode(kdf.derive(password.encode()))
 
 
-def create_bundle(directory, filename, password=None):
-    zip_buffer = io.BytesIO()
+def create_bundle(path, filename, password=None):
+    source = Path(path)
+    zip_buffer = BytesIO()
     with ZipFile(zip_buffer, 'a', ZIP_DEFLATED, False) as zfile:
-        for root, _, files in os.walk(directory):
-            for file in files:
-                fname = os.path.join(root, file)
-                fnamer = os.path.relpath(fname, directory)
-                zfile.write(fname, fnamer)
+        if source.is_file():
+            if source.suffix == '.py':
+                zfile.write(source, 'main.py')
+            else:
+                zfile.write(source, source.name)
+        for file in source.glob('**/*'):
+            zfile.write(file, file.relative_to(source))
 
     if not password:
         with open(filename, 'wb') as file:
@@ -52,7 +55,7 @@ def create_bundle(directory, filename, password=None):
 
 
 def extract_bundle(filename, directory, password=None):
-    zip_buffer = io.BytesIO()
+    zip_buffer = BytesIO()
     if not password:
         with open(filename, 'rb') as file:
             zip_buffer.write(file.read())
