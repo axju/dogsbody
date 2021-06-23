@@ -7,4 +7,4 @@ logger.debug('test debug')
 logger.info('test info')
 
 runtime.info()
-runtime.delete_source()
+# runtime.delete_source()

@@ -17,8 +17,8 @@ setup(
     entry_points={
         'console_scripts': [
             'dogsbody=dogsbody.__main__:main',
-            'dogsbody-create=dogsbody.create:main',
-            'dogsbody-daemon=dogsbody.daemon:main',
+            'dogsbody-bundle=dogsbody.bundle:cli',
+            'dogsbody-daemon=dogsbody.daemon:cli',
         ]
     }
 )

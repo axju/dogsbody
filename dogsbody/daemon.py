@@ -16,10 +16,19 @@ logger = getLogger('dogsbody.daemon')
 
 
 def iter_source(settings):
-    for path in settings.get('source', []):
+    for path in settings.get('files', []):
         filename = Path(path).resolve()
         if filename.is_file():
             yield filename
+
+    for root in settings.get('media_root', []):
+        for device in Path(root).iterdir():
+            if not device.is_dir():
+                continue
+            for path in settings.get('portable', []):
+                filename = Path(device / path).resolve()
+                if filename.is_file():
+                    yield filename
 
 
 def execute(path):
@@ -59,12 +68,17 @@ def dogsbody(settings):
 
 def main(settings, loop=True):
     interval = settings.get('interval', 10)
+    run_only_once = settings.get('run_only_once', True)
     logger.info('Run daemon with interval=%i', interval)
 
     error_counter = 0
+    run_it = True
     while loop:
         try:
-            dogsbody(settings)
+            if run_it or not run_only_once:
+                dogsbody(settings)
+            run_it = len(list(iter_source(settings))) == 0
+
             for _ in range(interval):
                 sleep(1)
             error_counter = 0

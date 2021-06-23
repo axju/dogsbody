@@ -6,7 +6,7 @@ from dynaconf import Dynaconf
 logger = logging.getLogger('dogsbody.utils')
 
 
-DEFAULT_SETTING_FILES = ['settings.toml']
+DEFAULT_SETTING_FILES = ['/etc/dogsbody.conf', 'settings.toml']
 
 
 def load_settings(filename=None, **kwargs):
