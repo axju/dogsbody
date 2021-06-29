@@ -35,7 +35,7 @@ def execute(path):
     logger.info('Change to workdir.')
 
     if Path(path / 'main.py').is_file():
-        exec(Path(path / 'main.py').read_text())
+        exec(Path(path / 'main.py').read_text(), globals())
         logger.info('run the main.py file ...')
 
     elif Path(path / 'main.sh').is_file():
