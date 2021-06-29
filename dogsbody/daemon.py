@@ -32,7 +32,7 @@ def iter_source(settings):
                     files.append(filename)
 
     if settings.get('only_first', False) and len(files) > 0:
-        return files[0]
+        return [files[0]]
     return files
 
 
