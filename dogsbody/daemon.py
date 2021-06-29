@@ -16,10 +16,11 @@ logger = getLogger('dogsbody.daemon')
 
 
 def iter_source(settings):
+    files = []
     for path in settings.get('files', []):
         filename = Path(path).resolve()
         if filename.is_file():
-            yield filename
+            files.append(filename)
 
     for root in settings.get('media_root', []):
         for device in Path(root).iterdir():
@@ -28,15 +29,22 @@ def iter_source(settings):
             for path in settings.get('portable', []):
                 filename = Path(device / path).resolve()
                 if filename.is_file():
-                    yield filename
+                    files.append(filename)
+
+    if settings.get('only_first', False) and len(files) > 0:
+        return files[0]
+    return files
 
 
 def execute(path):
     logger.info('Change to workdir.')
 
     if Path(path / 'main.py').is_file():
-        exec(Path(path / 'main.py').read_text(), globals())
-        logger.info('run the main.py file ...')
+        try:
+            exec(Path(path / 'main.py').read_text(), globals())
+            logger.info('run the main.py file ...')
+        except Exception as e:
+            logger.warning('error in main.py "%s"', str(e))
 
     elif Path(path / 'main.sh').is_file():
         filename = str(Path(path / 'main.sh'))
