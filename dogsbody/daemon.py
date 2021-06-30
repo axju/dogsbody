@@ -80,7 +80,7 @@ def main(settings, loop=True):
     logger.info('Run daemon with interval=%i', interval)
 
     error_counter = 0
-    run_it = True
+    run_it = True if settings.get('run_on_startup', True) else len(list(iter_source(settings))) == 0
     while loop:
         try:
             if run_it or not run_only_once:
