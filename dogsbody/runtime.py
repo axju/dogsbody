@@ -1,4 +1,5 @@
 from logging import getLogger
+from time import sleep
 
 logger = getLogger('dogsbody.runtime')
 
@@ -23,3 +24,8 @@ def info():
 
 def delete_source():
     SOURCE.unlink()
+
+
+def wait_until_source_remove(dt=1):
+    while SOURCE and SOURCE.is_file():
+        sleep(dt)
