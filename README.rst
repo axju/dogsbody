@@ -64,6 +64,7 @@ Setup project::
 
 Run some test::
 
+  pylint --rcfile=setup.cfg dogsbody
   tox
 
 Create package::

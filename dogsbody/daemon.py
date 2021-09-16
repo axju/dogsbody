@@ -3,12 +3,8 @@ from time import sleep
 from argparse import ArgumentParser
 from pathlib import Path
 from logging import getLogger
-from tempfile import mkdtemp
-from shutil import rmtree
-from subprocess import call
 
-from .bundle import extract_bundle
-from .runtime import set_current
+from .dog import dogsbody
 from .utils import setup_logger, load_settings
 
 
@@ -34,44 +30,6 @@ def iter_source(settings):
     if settings.get('only_first', False) and len(files) > 0:
         return [files[0]]
     return files
-
-
-def execute(path):
-    logger.info('Change to workdir.')
-
-    if Path(path / 'main.py').is_file():
-        try:
-            exec(Path(path / 'main.py').read_text(), globals())
-            logger.info('run the main.py file ...')
-        except Exception as e:
-            logger.warning('error in main.py "%s"', str(e))
-
-    elif Path(path / 'main.sh').is_file():
-        filename = str(Path(path / 'main.sh'))
-        call(['chmod', 'a+x', filename])
-        call([filename])
-        logger.info('run the main.sh file ...')
-
-    else:
-        logger.info('No main.sh file!')
-        return False
-    return True
-
-
-def dogsbody(settings):
-    for path in iter_source(settings):
-        workdir = Path(mkdtemp())
-        set_current(path, workdir, settings)
-        logger.info('Create workdir "%s"', workdir)
-
-        extract_bundle(path, workdir, settings.get('password'))
-        logger.info('extract bundle')
-
-        execute(workdir)
-        logger.info('execute bundle')
-
-        rmtree(workdir)
-        logger.info('Delete workdir "%s"', workdir)
 
 
 def main(settings, loop=True):

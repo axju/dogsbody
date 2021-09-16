@@ -6,15 +6,17 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from argparse import ArgumentParser
 from pathlib import Path
 
-from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from .utils import setup_logger
-
-
 logger = getLogger('dogsbody.bundle')
+
+try:
+    from cryptography.fernet import Fernet, InvalidToken
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+except ModuleNotFoundError:
+    logger.warning('Password mode disabled. Install "pip install cryptography" to use a password')
+
+from .utils import setup_logger  # noqa: E402 pylint: disable=wrong-import-position
 
 
 def get_password(password, salt=None):
