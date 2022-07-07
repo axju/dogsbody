@@ -9,7 +9,7 @@ from .runtime import set_current
 from .utils import execute, setup_logger
 
 
-logger = getLogger(__name__)
+logger = getLogger('dogsbody.dog')
 
 
 def dogsbody(path, **settings):
@@ -28,10 +28,20 @@ def dogsbody(path, **settings):
     logger.info('Delete workdir "%s"', workdir)
 
 
+def execute_file(path, password=None, delete=False):
+    try:
+        dogsbody(path, password=password)
+    except Exception as e:
+        logger.error(e)
+    if delete:
+        path.unlink(missing_ok=True)
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('-p', '--password', default=None)
-    parser.add_argument('-v', '--verbose', action="count", help="verbose level... repeat up to three times.")
+    parser.add_argument('-v', '--verbose', action='count', help="verbose level... repeat up to three times")
+    parser.add_argument('-d', '--delete', action='store_true', help="delete file, if done")
     parser.add_argument('path', nargs='?', const='.', default='.', help="path to dog file")
 
     args = parser.parse_args()
@@ -41,9 +51,9 @@ def main():
     if path.is_dir():
         for file in path.iterdir():
             if file.suffix == '.dog':
-                dogsbody(file, password=args.password)
+                execute_file(file, args.password, args.delete)
     elif path.is_file():
-        dogsbody(path, password=args.password)
+        execute_file(file, args.password, args.delete)
     else:
         logger.warning('bad path "%s"', path)
 
