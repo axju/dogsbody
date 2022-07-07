@@ -1,3 +1,4 @@
+import os
 from logging import getLogger
 from argparse import ArgumentParser
 from pathlib import Path
@@ -29,12 +30,15 @@ def dogsbody(path, **settings):
 
 
 def execute_file(path, password=None, delete=False):
+    result = True
     try:
         dogsbody(path, password=password)
     except Exception as e:
         logger.error(e)
+        result = False
     if delete:
         path.unlink(missing_ok=True)
+    return result
 
 
 def main():
@@ -42,20 +46,28 @@ def main():
     parser.add_argument('-p', '--password', default=None)
     parser.add_argument('-v', '--verbose', action='count', help="verbose level... repeat up to three times")
     parser.add_argument('-d', '--delete', action='store_true', help="delete file, if done")
+    parser.add_argument('-c', '--cmd', help="run command if any fiel ar execute")
     parser.add_argument('path', nargs='?', const='.', default='.', help="path to dog file")
 
     args = parser.parse_args()
     setup_logger(args.verbose)
     path = Path(args.path).resolve()
     logger.info('execute dogsbody with path %s', path)
+
+    result = False
     if path.is_dir():
         for file in path.iterdir():
             if file.suffix == '.dog':
-                execute_file(file, args.password, args.delete)
+                if execute_file(file, args.password, args.delete):
+                    result = True
     elif path.is_file():
-        execute_file(file, args.password, args.delete)
+        if execute_file(path, args.password, args.delete):
+            result = True
     else:
         logger.warning('bad path "%s"', path)
+
+    if result and args.cmd:
+        os.system(args.cmd)
 
 
 if __name__ == '__main__':
